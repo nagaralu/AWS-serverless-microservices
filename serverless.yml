@@ -1,0 +1,23 @@
+service:
+  name: auction
+
+plugins:
+  - serverless-bundle
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  memorySize: 256
+  #variables can be defined as below
+  stage: ${opt:stage, 'dev'}
+  region: us-east-2
+
+functions:
+  createAuction:
+    handler: src/handlers/createAuction.handler
+    events:
+      - http:
+          # POST method to create an auction - AWS will make necessary changes to Lambda
+          method: POST
+          path: /auction #note '/' is optional
