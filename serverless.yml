@@ -12,12 +12,21 @@ provider:
   #variables can be defined as below
   stage: ${opt:stage, 'dev'}
   region: us-east-2
+  # permission to write to DynamoDB Tables, also can be assigned at lambda functions
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        #- dynamodb:* #this will allow for all dynamodb actions
+        - dynamodb:PutItem
+      Resource: # copy Amazon Resource Name(ARN), note using pseudo-parameters plugin
+        # gives access to region and account number #{} - note hash symbol not $
+        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/AuctionsTable
 
 # creating DynamoDB Tables
 resources:
   Resources:
     # a new resource to create - an YAML object
-    AuctionTable:
+    AuctionsTable:
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: AuctionsTable
