@@ -49,6 +49,15 @@ functions:
           method: GET
           path: /auction/{id}
 
+  placeBid:
+    handler: src/handlers/placeBid.handler
+    events:
+      - http:
+          # PATCH method to place a bid - new lambda function
+          # POST is to create a resource, placing a bid is not resource, its a property of auction
+          method: PATCH
+          path: /auction/{id}/bid
+
 custom:
   AuctionsTable:
     #DynamoDB return values, Ref returns the DynamoDB table name and GetAtt returns ARN of the table
