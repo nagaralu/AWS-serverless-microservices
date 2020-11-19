@@ -1,9 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import AWS from 'aws-sdk';
-import middy from '@middy/core';
-import httpJsonBodyParser from '@middy/http-json-body-parser';
-import httpEventNormalizer from '@middy/http-event-normalizer';
-import httpErrorHandler from '@middy/http-error-handler';
+import commonMiddleware from '../lib/commonMiddleware';
 import createError from 'http-errors';
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
@@ -43,9 +40,4 @@ async function createAuction(event, context) {
   };
 }
 
-export const handler = middy(createAuction)
-  .use(httpJsonBodyParser()) // automatically parses stringified event.body
-  // normalizes HTTP events by adding an empty object for missing or non existent query or path params, prevents these missing errors
-  .use(httpEventNormalizer())
-  // Creates a proper HTTP response for errors that are created with the http-errors module and represents proper HTTP errors
-  .use(httpErrorHandler());
+export const handler = commonMiddleware(createAuction);
