@@ -1,0 +1,9 @@
+AuctionsTableIAM:
+  Effect: Allow
+  Action:
+    #- dynamodb:* #this will allow for all dynamodb actions
+    - dynamodb:PutItem
+  Resource: # copy Amazon Resource Name(ARN), note using pseudo-parameters plugin
+    # gives access to region and account number #{} - note hash symbol not $
+    #- arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/AuctionsTable
+    - ${self:custom.AuctionsTable.arn}

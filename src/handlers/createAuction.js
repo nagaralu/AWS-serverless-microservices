@@ -21,7 +21,8 @@ async function createAuction(event, context) {
   // insert the new item into DynamoDB table using put (create a new item)
   await dynamodb
     .put({
-      TableName: 'AuctionsTable', //note do not use camel case, use AWS document syntax
+      //TableName: 'AuctionsTable', //note do not use camel case, use AWS document syntax
+      TableName: process.env.AUCTIONS_TABLE_NAME, //NOTE the name is from serverless.yml file - environment variable
       Item: auction
     })
     .promise();

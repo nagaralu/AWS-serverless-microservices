@@ -12,35 +12,17 @@ provider:
   #variables can be defined as below
   stage: ${opt:stage, 'dev'}
   region: us-east-2
+  environment: ## the environment labels are used in js files
+    AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
   # permission to write to DynamoDB Tables, also can be assigned at lambda functions
   iamRoleStatements:
-    - Effect: Allow
-      Action:
-        #- dynamodb:* #this will allow for all dynamodb actions
-        - dynamodb:PutItem
-      Resource: # copy Amazon Resource Name(ARN), note using pseudo-parameters plugin
-        # gives access to region and account number #{} - note hash symbol not $
-        - arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/AuctionsTable
+    - ${file(iam/AuctionsTableIAM.yml):AuctionsTableIAM}
 
 # creating DynamoDB Tables
 resources:
   Resources:
     # a new resource to create - an YAML object
-    AuctionsTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: AuctionsTable
-        # still in free tier
-        BillingMode: PAY_PER_REQUEST
-        # note DynamoDB is schema less, can have any structure
-        # always define a primary key as property
-        # Attribute definitions are array of objects representing attributes of the table
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S # strings
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
+    AuctionsTable: ${file(resources/AuctionsTable.yml):AuctionsTable}
 
 functions:
   createAuction:
@@ -50,3 +32,9 @@ functions:
           # POST method to create an auction - AWS will make necessary changes to Lambda
           method: POST
           path: /auction #note '/' is optional
+
+custom:
+  AuctionsTable:
+    #DynamoDB return values, Ref returns the DynamoDB table name and GetAtt returns ARN of the table
+    name: !Ref AuctionsTable
+    arn: !GetAtt AuctionsTable.Arn
