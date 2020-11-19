@@ -33,6 +33,14 @@ functions:
           method: POST
           path: /auction #note '/' is optional
 
+  getAuctions:
+    handler: src/handlers/getAuctions.handler
+    events:
+      - http:
+          # GET method to get all auctions - new lambda function for get method - returns array of auctions
+          method: GET
+          path: /auctions
+
 custom:
   AuctionsTable:
     #DynamoDB return values, Ref returns the DynamoDB table name and GetAtt returns ARN of the table
