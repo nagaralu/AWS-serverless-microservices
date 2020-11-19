@@ -41,6 +41,14 @@ functions:
           method: GET
           path: /auctions
 
+  getAuction:
+    handler: src/handlers/getAuction.handler
+    events:
+      - http:
+          # GET method to get an auction by id - note the syntax for id path parameter to be available inside the lambda function
+          method: GET
+          path: /auction/{id}
+
 custom:
   AuctionsTable:
     #DynamoDB return values, Ref returns the DynamoDB table name and GetAtt returns ARN of the table
