@@ -4,9 +4,9 @@ import createError from 'http-errors';
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
-async function getAuction(event, context) {
+// defining this getAuctionById function so it can be used in other functions like update
+export async function getAuctionById(id) {
   let auction;
-  const { id } = event.pathParameters;
 
   try {
     // note the primary partition key in the DynamoDB Table is by 'id'
@@ -26,6 +26,13 @@ async function getAuction(event, context) {
   if (!auction) {
     throw new createError.NotFound(`Auction with ID "${id}" is not found!`);
   }
+
+  return auction;
+}
+
+async function getAuction(event, context) {
+  const { id } = event.pathParameters;
+  const auction = await getAuctionById(id);
 
   return {
     statusCode: 200,

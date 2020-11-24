@@ -6,7 +6,11 @@ AuctionsTableIAM:
     - dynamodb:Scan
     - dynamodb:GetItem
     - dynamodb:UpdateItem
+    - dynamodb:Query
   Resource: # copy Amazon Resource Name(ARN), note using pseudo-parameters plugin
     # gives access to region and account number #{} - note hash symbol not $
     #- arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/AuctionsTable
     - ${self:custom.AuctionsTable.arn}
+    # note defining Secondry Global Indexes will create virtual table and will also have its own ARN
+    # the following code is equal to ${self:custom.AuctionsTable.arn}/index/statusAndEndDate
+    - !Join ['/', ['${self:custom.AuctionsTable.arn}', 'index', 'statusAndEndDate']]
