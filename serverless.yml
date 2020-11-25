@@ -32,6 +32,7 @@ functions:
           # POST method to create an auction - AWS will make necessary changes to Lambda
           method: POST
           path: /auction #note '/' is optional
+          authorizer: ${self:custom.authorizer}
 
   getAuctions:
     handler: src/handlers/getAuctions.handler
@@ -40,6 +41,7 @@ functions:
           # GET method to get all auctions - new lambda function for get method - returns array of auctions
           method: GET
           path: /auctions
+          authorizer: ${self:custom.authorizer}
 
   getAuction:
     handler: src/handlers/getAuction.handler
@@ -48,6 +50,7 @@ functions:
           # GET method to get an auction by id - note the syntax for id path parameter to be available inside the lambda function
           method: GET
           path: /auction/{id}
+          authorizer: ${self:custom.authorizer}
 
   placeBid:
     handler: src/handlers/placeBid.handler
@@ -57,6 +60,7 @@ functions:
           # POST is to create a resource, placing a bid is not resource, its a property of auction
           method: PATCH
           path: /auction/{id}/bid
+          authorizer: ${self:custom.authorizer}
 
   processAuctions:
     handler: src/handlers/processAuctions.handler
@@ -65,6 +69,7 @@ functions:
       - schedule: rate(1 hour)
 
 custom:
+  authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:auth-service-${self:provider.stage}-auth
   AuctionsTable:
     #DynamoDB return values, Ref returns the DynamoDB table name and GetAtt returns ARN of the table
     name: !Ref AuctionsTable
