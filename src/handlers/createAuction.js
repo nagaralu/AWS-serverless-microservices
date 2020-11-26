@@ -13,6 +13,7 @@ async function createAuction(event, context) {
   // context can be used as middleware, like authentication
 
   const { title } = event.body;
+  // email of seller or the user who created bid
   const { email } = event.requestContext.authorizer;
   const now = new Date();
   const endDate = new Date();

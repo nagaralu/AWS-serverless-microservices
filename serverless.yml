@@ -14,9 +14,11 @@ provider:
   region: us-east-2
   environment: ## the environment labels are used in js files
     AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
+    MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
   # permission to write to DynamoDB Tables, also can be assigned at lambda functions
   iamRoleStatements:
     - ${file(iam/AuctionsTableIAM.yml):AuctionsTableIAM}
+    - ${file(iam/MailQueueIAM.yml):MailQueueIAM}
 
 # creating DynamoDB Tables
 resources:
@@ -74,3 +76,8 @@ custom:
     #DynamoDB return values, Ref returns the DynamoDB table name and GetAtt returns ARN of the table
     name: !Ref AuctionsTable
     arn: !GetAtt AuctionsTable.Arn
+  MailQueue:
+    # cf means cloudformation, both arn and url are outputs of notification-service in cloudformation
+    # also note a variable for dev stage ${} is used inside another variable
+    arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
+    url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
