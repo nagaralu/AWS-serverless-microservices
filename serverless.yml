@@ -38,6 +38,7 @@ functions:
           # POST method to create an auction - AWS will make necessary changes to Lambda
           method: POST
           path: /auction #note '/' is optional
+          cors: true
           authorizer: ${self:custom.authorizer}
 
   getAuctions:
@@ -47,6 +48,7 @@ functions:
           # GET method to get all auctions - new lambda function for get method - returns array of auctions
           method: GET
           path: /auctions
+          cors: true
           authorizer: ${self:custom.authorizer}
 
   getAuction:
@@ -56,6 +58,7 @@ functions:
           # GET method to get an auction by id - note the syntax for id path parameter to be available inside the lambda function
           method: GET
           path: /auction/{id}
+          cors: true
           authorizer: ${self:custom.authorizer}
 
   placeBid:
@@ -66,6 +69,7 @@ functions:
           # POST is to create a resource, placing a bid is not resource, its a property of auction
           method: PATCH
           path: /auction/{id}/bid
+          cors: true
           authorizer: ${self:custom.authorizer}
 
   uploadAuctionPicture:
@@ -74,6 +78,7 @@ functions:
       - http:
           method: PATCH
           path: auction/{id}/picture
+          cors: true
           authorizer: ${self:custom.authorizer}
 
   processAuctions:
