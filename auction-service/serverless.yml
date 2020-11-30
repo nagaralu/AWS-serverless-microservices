@@ -1,0 +1,103 @@
+service:
+  name: auction
+
+plugins:
+  - serverless-bundle
+  - serverless-pseudo-parameters
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  memorySize: 256
+  #variables can be defined as below
+  stage: ${opt:stage, 'dev'}
+  region: us-east-2
+  environment: ## the environment labels are used in js files
+    AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
+    MAIL_QUEUE_URL: ${self:custom.MailQueue.url}
+    AUCTIONS_BUCKET_NAME: ${self:custom.AuctionsBucket.name}
+  # permission to write to DynamoDB Tables, also can be assigned at lambda functions
+  iamRoleStatements:
+    - ${file(iam/AuctionsTableIAM.yml):AuctionsTableIAM}
+    - ${file(iam/MailQueueIAM.yml):MailQueueIAM}
+    - ${file(iam/AuctionsBucketIAM.yml):AuctionsBucketIAM}
+
+# creating DynamoDB Tables
+resources:
+  Resources:
+    # a new resource to create - an YAML object
+    AuctionsTable: ${file(resources/AuctionsTable.yml):AuctionsTable}
+    AuctionsBucket: ${file(resources/AuctionsBucket.yml):AuctionsBucket}
+    AuctionsBucketPolicy: ${file(resources/AuctionsBucket.yml):AuctionsBucketPolicy}
+
+functions:
+  createAuction:
+    handler: src/handlers/createAuction.handler
+    events:
+      - http:
+          # POST method to create an auction - AWS will make necessary changes to Lambda
+          method: POST
+          path: /auction #note '/' is optional
+          cors: true
+          authorizer: ${self:custom.authorizer}
+
+  getAuctions:
+    handler: src/handlers/getAuctions.handler
+    events:
+      - http:
+          # GET method to get all auctions - new lambda function for get method - returns array of auctions
+          method: GET
+          path: /auctions
+          cors: true
+          authorizer: ${self:custom.authorizer}
+
+  getAuction:
+    handler: src/handlers/getAuction.handler
+    events:
+      - http:
+          # GET method to get an auction by id - note the syntax for id path parameter to be available inside the lambda function
+          method: GET
+          path: /auction/{id}
+          cors: true
+          authorizer: ${self:custom.authorizer}
+
+  placeBid:
+    handler: src/handlers/placeBid.handler
+    events:
+      - http:
+          # PATCH method to place a bid - new lambda function
+          # POST is to create a resource, placing a bid is not resource, its a property of auction
+          method: PATCH
+          path: /auction/{id}/bid
+          cors: true
+          authorizer: ${self:custom.authorizer}
+
+  uploadAuctionPicture:
+    handler: src/handlers/uploadAuctionPicture.handler
+    events:
+      - http:
+          method: PATCH
+          path: auction/{id}/picture
+          cors: true
+          authorizer: ${self:custom.authorizer}
+
+  processAuctions:
+    handler: src/handlers/processAuctions.handler
+    events:
+      # uses Amazon EventBridge to automate schedule events using cron() or rate() expressions
+      - schedule: rate(1 hour)
+
+custom:
+  authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:auth-service-${self:provider.stage}-auth
+  AuctionsTable:
+    #DynamoDB return values, Ref returns the DynamoDB table name and GetAtt returns ARN of the table
+    name: !Ref AuctionsTable
+    arn: !GetAtt AuctionsTable.Arn
+  MailQueue:
+    # cf means cloudformation, both arn and url are outputs of notification-service in cloudformation
+    # also note a variable for dev stage ${} is used inside another variable
+    arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
+    url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
+  AuctionsBucket:
+    # note S3 bucket is global so picking a unique name with random chars
+    name: auctions-bucket-jhffh872bhvb-${self:provider.stage}

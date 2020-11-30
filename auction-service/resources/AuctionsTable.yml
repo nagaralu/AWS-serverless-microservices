@@ -1,0 +1,35 @@
+AuctionsTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: AuctionsTable-${self:provider.stage}
+    # still in free tier
+    BillingMode: PAY_PER_REQUEST
+    # note DynamoDB is schema less, can have any structure
+    # always define a primary key as property
+    # Attribute definitions are array of objects representing attributes of the table
+    AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      # Global secondary index (for queries) - partition key: status and sort key: endingAt
+      - AttributeName: status
+        AttributeType: S
+      - AttributeName: endingAt
+        AttributeType: S
+    KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+    # Define Global Secondary Index
+    GlobalSecondaryIndexes:
+      # name can be anything
+      - IndexName: statusAndEndDate
+        #note every attribute needs KeySchema
+        KeySchema:
+          - AttributeName: status
+            KeyType: HASH
+          - AttributeName: endingAt
+            KeyType: RANGE
+        # When a GlobalSecondaryIndex is used, DynamoDB creates a virtual table copy and projection command tells
+        # what needs to be copied into this virtual table
+        # ProjectionType ALL means when queried using status and endingAt we will get all the attributes of the items in the table
+        Projection:
+          ProjectionType: ALL
